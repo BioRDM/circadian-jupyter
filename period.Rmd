@@ -1,0 +1,110 @@
+---
+title: "Checking periods"
+author: "Tomasz Zielinski"
+date: "2023-11-05"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r include=FALSE}
+# Loading dependencies
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(gridExtra)
+library(knitr)
+
+```
+
+```{r include=FALSE}
+org_file = file.path("org", "15510_FFT.ppa.csv")
+
+if (!file.exists(org_file)) {
+  stop("Missing input file "+orgFile)
+}
+
+org_data = read_csv(org_file, skip = 10) 
+#head(org_data)
+```
+
+```{r}
+data <- org_data %>%
+  separate(DataRef,into=c("ID","CELL"), sep = "\\. \\[", remove=TRUE) %>%
+  separate(DataLabel,into=c("GENOTYPE","MARKER"), sep = " ", remove=FALSE) %>%
+  mutate(ID, as.numeric(ID)) %>%
+  mutate(DataLabel,as.factor((DataLabel))) %>%
+  mutate(GENOTYPE,as.factor((GENOTYPE))) %>%
+  mutate(MARKER,as.factor((MARKER))) 
+
+
+data$DataLabel <- factor(data$DataLabel, levels=unique(data$DataLabel))
+head(data)  
+
+```
+
+```{r}
+
+g <- ggplot(data, aes(DataLabel, Period))
+g + # coord_cartesian(ylim=c(0, 12)) + 
+  geom_boxplot(aes(fill=DataLabel)) +
+  #geom_point(aes(color=GENOTYPE)) + 
+  #geom_jitter(width = 0.05, aes(color=MARKER) ) +
+  labs(title="Period", y="[h]", x="Line")
+
+
+```
+
+```{r}
+
+g <- ggplot(data, aes(DataLabel, Amplitude))
+g + # coord_cartesian(ylim=c(0, 12)) + 
+  geom_boxplot(aes(fill=MARKER)) +
+  #geom_point(aes(color=GENOTYPE)) + 
+  #geom_jitter(width = 0.05, aes(color=MARKER) ) +
+  labs(title="Amplitude", x="Line")
+
+```
+
+```{r}
+
+g <- ggplot(data, aes(DataLabel, Circ.PhaseToZero))
+g + # coord_cartesian(ylim=c(0, 12)) + 
+  geom_boxplot(aes(fill=MARKER)) +
+  #geom_point(aes(color=GENOTYPE)) + 
+  #geom_jitter(width = 0.05, aes(color=MARKER) ) +
+  labs(title="Circadian phase",y='Phase [h]', x="Line")
+
+```
+
+```{r}
+
+
+ggplot(data, aes(x = Circ.PhaseToZero, y=ERR)) + 
+  #geom_polygon(fill = NA, col = 1) +
+  geom_point(aes(color=DataLabel), size = 3) +
+  theme_minimal() + 
+  coord_polar() +
+  geom_bar(stat='identity', aes(color = DataLabel, fill= DataLabel)) +
+  scale_x_continuous("", breaks = 0:24, limits = c(0, 24)) #+
+  #ylim(0, 1) # adjust as you like
+```
+
+
+```{r}
+
+res_aov <- aov(Period ~ DataLabel,
+  data = data
+)
+
+summary(res_aov)
+
+library(multcomp)
+
+post_test <- glht(res_aov,
+  linfct = mcp(DataLabel = "Tukey")
+)
+
+summary(post_test)
+```
