@@ -1,0 +1,80 @@
+---
+title: "Tiding data before the anlysis"
+author: "Tomasz Zielinski"
+date: "2023-11-05"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r include=FALSE}
+# Loading dependencies
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(gridExtra)
+library(knitr)
+
+```
+
+```{r include=FALSE}
+org_file = file.path("org", "15510_data.LIN_DTR.csv")
+org_file = file.path("org", "15510_data.LIN_DTR.norm.csv")
+
+if (!file.exists(org_file)) {
+  stop("Missing input file "+orgFile)
+}
+
+org_data = read_csv(org_file) 
+```
+
+```{r}
+data <- org_data %>%
+  separate('Label:',into=c("CELL","LABEL"), sep = "] ", remove=TRUE) %>%
+  separate('CELL',into=c("ID","CELL"), sep = "\\.\\[", remove=TRUE) %>%
+  separate('LABEL',into=c("GENOTYPE","MARKER"), sep = " ", remove=FALSE) 
+
+
+#head(data)
+data <- org_data %>%
+  separate('Label:',into=c("ID","LABEL"), sep = "\\. ", remove=TRUE) %>%
+  separate('LABEL',into=c("GENOTYPE","MARKER"), sep = " ", remove=FALSE) 
+
+head(data)  
+
+```
+
+```{r}
+rows = pull(data,LABEL)
+
+table <- data %>% 
+  select(-1:-4) %>%
+  as.matrix()
+
+rownames(table) <- rows
+#kable(table)
+
+heatmap(table, Rowv=NA, Colv = NA )
+
+```
+
+```{r}
+table <-data %>% 
+  pivot_longer(-1:-5, names_to="TIME", values_to="VALUE") %>%
+  mutate(TIME = as.numeric(TIME)) %>%
+  mutate(ID = as.numeric(ID)) %>%
+  mutate(LABEL = paste(LABEL, " ", ID)) %>% 
+  arrange(ID)
+  #filter(TIME < 12)
+
+head(table)
+
+ggplot(table, aes(TIME, LABEL, fill= VALUE)) + 
+  geom_tile() +
+  scale_fill_gradient2(low = "#075AFF",
+                       mid = "#FFFFFF",
+                       high = "#FF0000") 
+  #coord_fixed()  
+
+```
