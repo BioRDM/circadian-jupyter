@@ -1,0 +1,38 @@
+---
+title: "Plotting data"
+author: "Tomasz Zielinski"
+date: "2023-11-05"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r include=FALSE}
+# Loading dependencies
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(gridExtra)
+library(knitr)
+
+```
+
+```{r include=FALSE}
+org_file = file.path("long_days_ppa.csv")
+
+if (!file.exists(org_file)) {
+  stop("Missing input file "+orgFile)
+}
+
+data <- read_csv(org_file) 
+data <- data %>%
+  mutate(Label = as.factor((Label))) %>%
+  mutate(GENOTYPE = as.factor((GENOTYPE))) %>%
+  mutate(MARKER = as.factor((MARKER)))
+
+```
+
+```{r}
+head(data)
+```
