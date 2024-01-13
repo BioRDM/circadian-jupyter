@@ -97,7 +97,9 @@ Period stats
 distributions <- data %>%
   group_by(DataLabel) %>%
   summarise(avg_p=mean(Period), sd_p=sd(Period),avg_e=mean(PeriodErr), sd_e=sd(PeriodErr),avg_a=mean(Amplitude), 
-            sd_a=sd(Amplitude), sd_f=sd(Circ.PhaseToZero),avg_f=mean(Circ.PhaseToZero))
+            sd_a=sd(Amplitude), avg_f=mean(Circ.PhaseToZero), sd_f=sd(Circ.PhaseToZero),
+            avg_rae=mean(ERR), sd_rae=sd(ERR)
+            )
 
 distributions
 
@@ -243,7 +245,7 @@ g + # coord_cartesian(ylim=c(0, 12)) +
   geom_boxplot(aes(fill=data)) +
   #geom_point(aes(color=GENOTYPE)) + 
   #geom_jitter(width = 0.05, aes(color=MARKER) ) +
-  labs(title="Amplitude", y="counts", x="Line")
+  labs(title="Phase", y="counts", x="Line")
 
 
 ggplot(faked, aes(x = val, y=1)) + 
@@ -260,12 +262,41 @@ phases
 
 ```
 
+RAE
+```{r}
+labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
+means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.42, 0.5, 0.4)
+stds <- c(0.04, 0.02, 0.0214, 0.02, 0.03, 0.025, 0.12, 0.15, 0.13)
+
+faked <- series(labels, means, stds, 8)
+faked
+
+# Use dplyr to update the values
+faked$val[faked$val < 0] <- 0 - faked$val[faked$val < 0]
+
+#faked
+
+g <- ggplot(faked, aes(data, val))
+g + # coord_cartesian(ylim=c(0, 12)) + 
+  geom_boxplot(aes(fill=data)) +
+  #geom_point(aes(color=GENOTYPE)) + 
+  #geom_jitter(width = 0.05, aes(color=MARKER) ) +
+  labs(title="RAE", y="counts", x="Line")
+
+
+raes <- faked %>% rename(Label = data, RAE = val)
+raes
+
+
+```
+
 
 ```{r}
 
 data <- periods %>%
         cbind( select(amplitudes, Amplitude)) %>%
         cbind( select(phases, Phase)) %>%
+        cbind( select(raes, RAE)) %>%
         separate(Label,into=c("GENOTYPE","MARKER"), sep = " ", remove=FALSE) 
 
 
@@ -281,6 +312,7 @@ Short days
 labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
 means <- c(24.0, 24.2, 24.5,30.1, 28.5, 28, 20, 18, 19)
 stds <- c(0.642, 0.628, 0.7, 1.25, 1.5, 1.2, 2.7, 3.5, 3.7)
+
 
 faked <- series(labels, means, stds, 8)
 #faked
@@ -322,6 +354,25 @@ faked$val[faked$val > 24] <- faked$val[faked$val < 24] - 24
 phases <- faked %>% rename(Label = data, Phase = val)
 phases
 
+labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
+means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.42, 0.38, 0.4)
+stds <- c(0.04, 0.02, 0.0214, 0.02, 0.03, 0.025, 0.12, 0.15, 0.13)
+
+faked <- series(labels, means, stds, 8)
+faked
+
+faked$val[faked$val < 0] <- 0 - faked$val[faked$val < 0]
+raes <- faked %>% rename(Label = data, RAE = val)
+raes
+
+
+data <- periods %>%
+        cbind( select(amplitudes, Amplitude)) %>%
+        cbind( select(phases, Phase)) %>%
+        cbind( select(raes, RAE)) %>%
+        separate(Label,into=c("GENOTYPE","MARKER"), sep = " ", remove=FALSE) 
+
+
 data
 
 write_csv(data, "short_days_ppa.csv")
@@ -329,21 +380,3 @@ write_csv(data, "short_days_ppa.csv")
 
 ```
 
-```{r eval=FALSE, include=FALSE}
-
-
-
-res_aov <- aov(val ~ data,
-  data = faked
-)
-
-summary(res_aov)
-
-library(multcomp)
-
-post_test <- glht(res_aov,
-  linfct = mcp(data = "Tukey")
-)
-
-summary(post_test)
-```
