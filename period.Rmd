@@ -168,8 +168,8 @@ SEED 127
 ```{r}
 #set.seed(127)
 labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
-means <- c(24.4, 24.5, 24.0,30.8, 30.5, 30, 22, 20, 22)
-stds <- c(0.642, 0.628, 0.7, 1.25, 1.5, 1.2, 2.7, 3.5, 3.7)
+means <- c(24.4, 24.5, 24.0,30.8, 31.0, 30.35, 22, 20, 22)
+stds <- c(0.642, 0.628, 0.7, 1.25, 1.5, 1.4, 2.7, 3.5, 3.7)
 
 faked <- series(labels, means, stds, 8)
 #faked
