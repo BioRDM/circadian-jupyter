@@ -265,7 +265,7 @@ phases
 RAE
 ```{r}
 labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
-means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.4, 0.4, 0.4)
+means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.3, 0.3, 0.3)
 stds <- c(0.04, 0.02, 0.0214, 0.02, 0.03, 0.025, 0.12, 0.15, 0.13)
 
 faked <- series(labels, means, stds, 8)
@@ -355,7 +355,7 @@ phases <- faked %>% rename(Label = data, Phase = val)
 phases
 
 labels <- c('WT LHY', 'WT PRR5', 'WT TOC1','prr79 LHY', 'prr79 PRR5', 'prr79 TOC1','elf4 LHY', 'elf4 PRR5', 'elf4 TOC1')
-means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.42, 0.38, 0.4)
+means <- c(0.2, 0.27, 0.18, 0.14, 0.15, 0.12, 0.35, 0.3, 0.32)
 stds <- c(0.04, 0.02, 0.0214, 0.02, 0.03, 0.025, 0.12, 0.15, 0.13)
 
 faked <- series(labels, means, stds, 8)
