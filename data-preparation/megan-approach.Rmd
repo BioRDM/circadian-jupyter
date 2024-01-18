@@ -1,0 +1,103 @@
+---
+title: "Megan's  suggestions"
+author: "Tomasz Zielinski"
+date: "2023-11-05"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+rdm3<-read.csv("light-conditions_ppa.csv", header=TRUE)
+str(rdm3) #
+rdm3$Label <- as.factor(rdm3$Label)
+rdm3$GENOTYPE<- as.factor(rdm3$GENOTYPE)
+rdm3$MARKER<- as.factor(rdm3$MARKER)
+rdm3$CONDITION<- as.factor(rdm3$CONDITION)
+# subset by condition
+rdm3_sub <- subset(rdm3, CONDITION == 'LD')
+
+rdm3_sub$GENOTYPE<-relevel(rdm3_sub$GENOTYPE, ref = "WT") 
+
+
+```
+
+
+```{r}
+hist(rdm3_sub$Period)
+hist(log(rdm3_sub$Period))
+
+```
+
+
+```{r}
+# set contrasts for Type 3 tests, remove if no interaction, you can also set contrasts directly within Anova
+m1<-lm(Period ~ GENOTYPE * MARKER, data = rdm3_sub, contrasts = list(GENOTYPE = contr.sum, MARKER = contr.sum))
+plot(m1) # can't use lm/ ANOVA based on these diagnostics
+summary(m1)
+library(car) # Anova function for interaction and main effects, LR, Wald, F tests
+Anova(m1, type = c(3)) # use type 3 for interactions, but must set contrasts first!
+
+```
+
+
+```{r}
+# Let's say the interaction was significant... how would you test differences? If an interaction is significant, don't interpret the main effects! (You can't make assumptions about main effets in the prescence of a sig interaction effect)
+library(emmeans)
+emm_int<-emmeans(m1, ~GENOTYPE:MARKER)
+pairs(emm_int) # DON'T INTERPRET THESE AS SIGNIFICANT! You don't have a sig interaction so you cannot do so, this is only a demonstration
+
+```
+
+
+```{r}
+# drop interaction
+m1a<-lm(Period ~ GENOTYPE + MARKER, data = rdm3_sub)
+# we already know that plots look horrible, I'm just doing this so you can see it
+plot(m1a)
+anova(m1, m1a) # compare models
+summary(m1a)
+Anova(m1a, type = c(2)) # change to type 2
+
+```
+
+
+```{r}
+# remove Marker from the model 
+m1b<-lm(Period ~ GENOTYPE, data = rdm3_sub)
+summary(m1b) # differences compared to control (again, you can't use this, this is a demonstration)
+plot(m1b) # It's obvious that you have some big variance and linearity problems
+
+```
+
+
+```{r}
+# Differences between genotypes 
+TukeyHSD(aov(m1b)) # you can only use this if you have one x in model... 
+# Or use emmeans 
+emm <- emmeans(m1b, ~ GENOTYPE)
+pairs(emm)
+
+
+```
+```{r}
+
+```
+
+```{r}
+# or use the multcomp package
+library(multcomp)
+phglht<-glht(m1b, linfct = mcp(GENOTYPE = "Tukey"))
+summary(phglht)
+# They all give you similar results.
+
+```
+
+
+```{r}
+
+```
+
+
+
