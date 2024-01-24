@@ -1,3 +1,6 @@
+.Rhistory/
+.Rproj.user/
+
 # Byte-compiled / optimized / DLL files
 .ipynb_checkpoints
 nohup.out
